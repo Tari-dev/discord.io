@@ -22,12 +22,14 @@
 from typing import TYPE_CHECKING, Any, List, Optional
 
 from discord.types import allowed_mentions
+from discord.user import User
 
 from ..api.rest import Route
 from ..embed import Embed
 from ..member import Member
+from ..message import Message
 from ..types import Dict, embed_parse
-from ..webhooks import webhook_context
+from ..webhooks import WebhookAdapter
 
 if TYPE_CHECKING:
     from ..state import ConnectionState
@@ -96,7 +98,7 @@ class Interaction:
 
         try:
             # buttons will give this data
-            self.message = data['message']
+            self.message = Message(data['message'], self.state.app)
         except KeyError:
             self.message = None
 
@@ -126,7 +128,7 @@ class Interaction:
         -------
         :meth:`Webhook.execute`
         """
-        adapter = webhook_context.get()
+        adapter = WebhookAdapter(self.state)
         return adapter.execute(
             id=self.state._bot_id,
             token=self.token,
@@ -203,7 +205,7 @@ class Interaction:
         if modal:
             ret = {'type': 9, 'data': modal}
 
-        adapter = webhook_context.get()
+        adapter = WebhookAdapter(self.state)
         self._responded = True
         return adapter.rest.send(
             Route('POST', f'/interactions/{self.id}/{self.token}/callback'), json=ret
@@ -228,10 +230,14 @@ class Interaction:
         :class:`Member`
         """
         return Member(self.data['member'], self.state.app.factory)
-    
+
     def send(self, content: Optional[str] = None, **kwargs):
         """Shorthand for :meth:`Interaction.respond`
-        
+
         .. versionadded:: 1.0
         """
         return self.respond(content, **kwargs)
+
+    @property
+    def author(self) -> User:
+        return User(self.data.get('message')['author'])
