@@ -18,10 +18,10 @@ async def ping(ctx):
 
 @bot.command(
     flags=[
-        Flag('--test', '-t', type=Flag.STRING, default=''),
-        Flag('--bool', '-b', type=Flag.BOOLEAN, default=False),
-        Flag('--int', '-i', type=Flag.INT),
-        Flag('--float', '-f', type=Flag.FLOAT),
+        Flag('--test', type=Flag.STRING, default=''),
+        Flag('--bool', type=Flag.BOOLEAN, default=False),
+        Flag('--int', type=Flag.INT),
+        Flag('--float', type=Flag.FLOAT),
     ]
 )
 async def flags(ctx: Context, word: str):
